@@ -78,6 +78,7 @@ SITE_NAME = 'http://127.0.0.1:8765'
 
 @app.route('/nucleardata/', defaults={'path': ''}, methods=['GET', 'POST'])
 @app.route('/nucleardata/<path:path>', methods=['GET', 'POST'])
+@flask_login.login_required
 def proxy(path):
     global SITE_NAME
     print(path)
