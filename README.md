@@ -98,3 +98,4 @@ with a working solution for the Flask reverse proxy:
 [Docker]: https://www.docker.com/
 [SHA-256]: https://en.wikipedia.org/wiki/SHA-2
 [salting]: https://en.wikipedia.org/wiki/Salt_(cryptography)
+[Unlicense]: https://unlicense.org/
