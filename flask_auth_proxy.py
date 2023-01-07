@@ -41,11 +41,11 @@ def request_loader(request):
 def login():
     if flask.request.method == 'GET':
         return '''
-		   <form action='login' method='POST'>
-			<input type='text' name='email' id='email' placeholder='email'/>
-			<input type='password' name='password' id='password' placeholder='password'/>
-			<input type='submit' name='submit'/>
-		   </form>
+            <form action='login' method='POST'>
+                <input type='text' name='email' id='email' placeholder='email'/>
+                <input type='password' name='password' id='password' placeholder='password'/>
+                <input type='submit' name='submit'/>
+           </form>
         '''
     email = flask.request.form['email']
     if flask.request.form['password'] == users[email]['password']:
@@ -85,7 +85,7 @@ def proxy(path):
     # excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     if flask.request.method=='GET':
-        querystr = flask.request.query_string.decode() 
+        querystr = flask.request.query_string.decode()
         target_url = f'{SITE_NAME}/{path}'
         # if querystr != '':
         #     target_url += f'?{querystr}'
@@ -95,7 +95,7 @@ def proxy(path):
         response = flask.Response(resp.content, resp.status_code, headers)
         return response
     elif flask.request.method=='POST':
-        querystr = flask.request.query_string.decode() 
+        querystr = flask.request.query_string.decode()
         target_url = f'{SITE_NAME}/{path}'
         # if querystr != '':
         #     target_url += f'?{querystr}'
