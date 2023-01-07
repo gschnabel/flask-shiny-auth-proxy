@@ -2,9 +2,13 @@ import flask
 import flask_login
 import requests
 
+
+# address of shiny app behind flask reverse proxy
+SITE_NAME = 'http://127.0.0.1:8765'
+
+
 app = flask.Flask(__name__)
 app.secret_key = 'think twice!'
-
 
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
@@ -33,7 +37,8 @@ def request_loader(request):
     user = User()
     user.id = email
 
-    user.is_authenticated = request.form['password'] == users[email]['password']
+    user.is_authenticated = \
+        request.form['password'] == users[email]['password']
     return user
 
 
@@ -74,42 +79,55 @@ def unauthorized_handler():
     return 'Unauthorized'
 
 
-SITE_NAME = 'http://127.0.0.1:8765'
-
-@app.route('/nucleardata/', defaults={'path': ''}, methods=['GET', 'POST'])
-@app.route('/nucleardata/<path:path>', methods=['GET', 'POST'])
+@app.route('/shinyapp/', defaults={'path': ''}, methods=['GET', 'POST'])
+@app.route('/shinyapp/<path:path>', methods=['GET', 'POST'])
 @flask_login.login_required
 def proxy(path):
     global SITE_NAME
-    print(path)
-    # excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
-    excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
-    if flask.request.method=='GET':
-        querystr = flask.request.query_string.decode()
+    excluded_headers = [
+        'content-encoding', 'content-length', 'transfer-encoding', 'connection'
+    ]
+
+    if flask.request.method == 'GET':
         target_url = f'{SITE_NAME}/{path}'
-        # if querystr != '':
-        #     target_url += f'?{querystr}'
-        resp = requests.get(f'{target_url}', params=flask.request.args.to_dict())
-        # resp = requests.get(f'{target_url}')
-        headers = [(name, value) for (name, value) in  resp.raw.headers.items() if name.lower() not in excluded_headers]
+        resp = requests.get(
+            f'{target_url}', params=flask.request.args.to_dict()
+        )
+        headers = [
+            (name, value) for (name, value) in resp.raw.headers.items()
+            if name.lower() not in excluded_headers
+        ]
         response = flask.Response(resp.content, resp.status_code, headers)
         return response
-    elif flask.request.method=='POST':
-        querystr = flask.request.query_string.decode()
+
+    elif flask.request.method == 'POST':
+        # querystr = flask.request.query_string.decode()
         target_url = f'{SITE_NAME}/{path}'
+        # seems to be unnecessary but may be required if a post
+        # request also contains parameters in the url
         # if querystr != '':
         #     target_url += f'?{querystr}'
         content_type = flask.request.headers.get('Content-Type')
         if content_type == 'application/json':
-            resp = requests.post(f'{target_url}',json=flask.request.get_json())
+            resp = requests.post(
+                f'{target_url}', json=flask.request.get_json()
+            )
         elif content_type == 'application/x-www-form-urlencoded':
-            resp = requests.post(f'{target_url}',data=flask.request.form.to_dict())
+            resp = requests.post(
+                f'{target_url}', data=flask.request.form.to_dict()
+            )
         else:
-            raise TypeError(f'Do not know how to deal with Content-Type {content_type}')
-        headers = [(name, value) for (name, value) in resp.raw.headers.items() if name.lower() not in excluded_headers]
+            raise TypeError(
+                f'Do not know how to deal with Content-Type {content_type}'
+            )
+        headers = [
+            (name, value) for (name, value) in resp.raw.headers.items()
+            if name.lower() not in excluded_headers
+        ]
         response = flask.Response(resp.content, resp.status_code, headers)
         return response
-    elif flask.request.method=='DELETE':
+
+    elif flask.request.method == 'DELETE':
         resp = requests.delete(f'{SITE_NAME}{path}').content
         response = flask.Response(resp.content, resp.status_code, headers)
         return response
